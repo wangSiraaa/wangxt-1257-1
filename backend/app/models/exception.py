@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, Enum, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.core.database import Base
@@ -34,6 +34,8 @@ class ExceptionItem(Base):
     handled_by = Column(Integer, ForeignKey("users.id"))
     handled_at = Column(DateTime(timezone=True))
     handle_note = Column(Text)
+    verify_conclusion = Column(Text)
+    affect_settlement = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

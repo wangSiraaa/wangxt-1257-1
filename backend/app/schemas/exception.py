@@ -20,10 +20,14 @@ class ExceptionCreate(ExceptionBase):
 class ExceptionUpdate(BaseModel):
     status: Optional[ExceptionStatus] = None
     handle_note: Optional[str] = None
+    verify_conclusion: Optional[str] = None
+    affect_settlement: Optional[bool] = None
 
 
 class ExceptionHandle(BaseModel):
     handle_note: str
+    verify_conclusion: Optional[str] = None
+    affect_settlement: bool = False
     new_status: ExceptionStatus = ExceptionStatus.RESOLVED
 
 
@@ -40,6 +44,8 @@ class ExceptionResponse(BaseModel):
     handled_by: Optional[int] = None
     handled_at: Optional[datetime] = None
     handle_note: Optional[str] = None
+    verify_conclusion: Optional[str] = None
+    affect_settlement: Optional[bool] = None
     created_at: datetime
     updated_at: datetime
 
@@ -54,6 +60,8 @@ class ExceptionInList(BaseModel):
     title: str
     severity: int
     status: ExceptionStatus
+    verify_conclusion: Optional[str] = None
+    affect_settlement: Optional[bool] = None
     created_at: datetime
 
     class Config:

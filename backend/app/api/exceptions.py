@@ -99,21 +99,49 @@ def handle_exception(
     ex.handled_by = current_user.id
     ex.handled_at = datetime.utcnow()
     ex.handle_note = handle_in.handle_note
+    ex.verify_conclusion = handle_in.verify_conclusion
+    ex.affect_settlement = handle_in.affect_settlement
 
     if handle_in.new_status in [ExceptionStatus.RESOLVED, ExceptionStatus.CLOSED]:
+        from app.models.weighing import Weighing, WeighingStatus
+        from app.models.settlement import Settlement, SettlementStatus
+        from app.models.route import Route
+
+        weighing_id = None
+
         if ex.related_type == "weighing" and ex.related_id:
-            from app.models.weighing import Weighing, WeighingStatus
-            weighing = db.query(Weighing).filter(Weighing.id == ex.related_id).first()
+            weighing_id = ex.related_id
+            weighing = db.query(Weighing).filter(Weighing.id == weighing_id).first()
             if weighing and weighing.status == WeighingStatus.EXCEPTION:
                 weighing.status = WeighingStatus.SIGNED if weighing.signature_data else WeighingStatus.DRAFT
 
-            from app.models.settlement import Settlement, SettlementStatus
-            settlements = db.query(Settlement).filter(Settlement.weighing_id == ex.related_id).all()
-            for s in settlements:
-                if s.is_frozen:
-                    s.is_frozen = False
-                    s.status = SettlementStatus.PENDING
-                    s.frozen_reason = None
+        if ex.related_type == "route" and ex.related_id:
+            route = db.query(Route).filter(Route.id == ex.related_id).first()
+            if route:
+                weighing_id = route.weighing_id
+
+        if weighing_id:
+            settlements = db.query(Settlement).filter(Settlement.weighing_id == weighing_id).all()
+
+            if ex.type == ExceptionType.WEIGHT_DIFF:
+                for s in settlements:
+                    if s.is_frozen:
+                        s.is_frozen = False
+                        s.status = SettlementStatus.PENDING
+                        s.frozen_reason = None
+
+            elif ex.type == ExceptionType.ROUTE_DEVIATION:
+                for s in settlements:
+                    if handle_in.affect_settlement:
+                        if not s.is_frozen and s.status != SettlementStatus.PAID:
+                            s.is_frozen = True
+                            s.status = SettlementStatus.FROZEN
+                            s.frozen_reason = f"路线偏离异常影响结算：{handle_in.verify_conclusion or '监管核实确认影响结算'}"
+                    else:
+                        if s.is_frozen and s.frozen_reason and "路线偏离" in s.frozen_reason:
+                            s.is_frozen = False
+                            s.status = SettlementStatus.PENDING
+                            s.frozen_reason = None
 
     db.commit()
     db.refresh(ex)

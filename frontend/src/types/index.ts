@@ -188,11 +188,25 @@ export interface ExceptionItem {
   handled_by?: number
   handled_at?: string
   handle_note?: string
+  verify_conclusion?: string
+  affect_settlement?: boolean
   created_at: string
   updated_at: string
 }
 
 export type SettlementStatus = 'pending' | 'frozen' | 'paid' | 'cancelled'
+
+export interface SettlementExceptionInfo {
+  id: number
+  exception_no: string
+  type: ExceptionType
+  title: string
+  status: ExceptionStatus
+  verify_conclusion?: string
+  affect_settlement?: boolean
+  handle_note?: string
+  created_at: string
+}
 
 export interface Settlement {
   id: number
@@ -208,6 +222,9 @@ export interface Settlement {
   paid_at?: string
   paid_by?: number
   remark?: string
+  exceptions?: SettlementExceptionInfo[]
+  has_exceptions?: boolean
+  has_affect_settlement_exception?: boolean
   created_at: string
   updated_at: string
 }
@@ -431,11 +448,16 @@ export interface ExceptionUpdate {
   description?: string
   severity?: number
   status?: ExceptionStatus
+  handle_note?: string
+  verify_conclusion?: string
+  affect_settlement?: boolean
 }
 
 export interface ExceptionHandle {
-  status: ExceptionStatus
+  new_status?: ExceptionStatus
   handle_note: string
+  verify_conclusion?: string
+  affect_settlement?: boolean
 }
 
 export interface SettlementUpdate {

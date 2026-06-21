@@ -1,8 +1,24 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
 from app.models.settlement import SettlementStatus
+from app.models.exception import ExceptionType, ExceptionStatus
+
+
+class SettlementExceptionInfo(BaseModel):
+    id: int
+    exception_no: str
+    type: ExceptionType
+    title: str
+    status: ExceptionStatus
+    verify_conclusion: Optional[str] = None
+    affect_settlement: Optional[bool] = None
+    handle_note: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 class SettlementBase(BaseModel):
@@ -43,6 +59,7 @@ class SettlementResponse(BaseModel):
     paid_at: Optional[datetime] = None
     paid_by: Optional[int] = None
     remark: Optional[str] = None
+    exceptions: Optional[List[SettlementExceptionInfo]] = None
     created_at: datetime
     updated_at: datetime
 
@@ -58,6 +75,8 @@ class SettlementInList(BaseModel):
     total_amount: Decimal
     status: SettlementStatus
     is_frozen: bool
+    has_exceptions: Optional[bool] = False
+    has_affect_settlement_exception: Optional[bool] = False
     created_at: datetime
 
     class Config:

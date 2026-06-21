@@ -225,6 +225,8 @@ CREATE TABLE IF NOT EXISTS exceptions (
     handled_by INTEGER REFERENCES users(id),
     handled_at TIMESTAMP WITH TIME ZONE,
     handle_note TEXT,
+    verify_conclusion TEXT,
+    affect_settlement BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
